@@ -1,25 +1,26 @@
 import { useState } from "react";
 import "./App.css";
-import { SiF1 } from "react-icons/si";
 
 function App() {
-  const [answer, setAnswer] = useState("0");
+  const [answer, setAnswer] = useState("");
   const [expression, setExpression] = useState("");
   const et = expression.trim();
+
   const isOperator = (symbol: string) => {
     return /[*/+-]/.test(symbol);
   };
+
   const buttonPress = (symbol: string) => {
     if (symbol === "clear") {
       setAnswer("");
       setExpression("0");
-      return;
     } else if (symbol === "negative") {
       if (answer === "") return;
       setAnswer(
         answer.toString().charAt(0) === "-" ? answer.slice(1) : "-" + answer
       );
     } else if (symbol === "percent") {
+      if (answer === "") return;
       setAnswer((parseFloat(answer) / 100).toString());
     } else if (isOperator(symbol)) {
       setExpression(et + " " + symbol + " ");
@@ -30,13 +31,13 @@ function App() {
         setExpression(expression + symbol);
       }
     } else if (symbol === ".") {
-      if (answer.indexOf(".") === -1) {
-        //split by operators and get last number
-        const lastNumber = expression.split(/[-+*]/g).pop();
-        //if last number aldready has a decimal, don't add anther
-        if (lastNumber?.includes(".")) return;
-        setExpression(expression + symbol);
-      }
+      // split by operators and get last number
+      const lastNumber = expression.split(/[-+/*]/g).pop();
+      if (!lastNumber) return;
+      console.log("lastNumber :>> ", lastNumber);
+      // if last number already has a decimal, don't add another
+      if (lastNumber?.includes(".")) return;
+      setExpression(expression + symbol);
     } else {
       if (expression.charAt(0) === "0") {
         setExpression(expression.slice(1) + symbol);
@@ -45,20 +46,21 @@ function App() {
       }
     }
   };
+
   const calculate = () => {
-    //if last char is an operator, do nothing
+    // if last char is an operator, do nothing
     if (isOperator(et.charAt(et.length - 1))) return;
     // clean the expression so that two operators in a row uses the last operator
     // 5 * - + 5 = 10
     const parts = et.split(" ");
     const newParts = [];
 
-    //go through parts backwards
+    // go through parts backwards
     for (let i = parts.length - 1; i >= 0; i--) {
       if (["*", "/", "+"].includes(parts[i]) && isOperator(parts[i - 1])) {
         newParts.unshift(parts[i]);
         let j = 0;
-        let k =  i - 1;
+        let k = i - 1;
         while (isOperator(parts[k])) {
           k--;
           j++;
@@ -69,11 +71,11 @@ function App() {
       }
     }
     const newExpression = newParts.join(" ");
-    if(isOperator(newExpression.charAt(0))) {
-      setAnswer(eval(answer + newExpression) as string)
+    if (isOperator(newExpression.charAt(0))) {
+      setAnswer(eval(answer + newExpression) as string);
     } else {
-      setAnswer(eval(newExpression) as string)
-    } 
+      setAnswer(eval(newExpression) as string);
+    }
     setExpression("");
   };
 
